@@ -274,7 +274,7 @@ with st.sidebar:
     if usuario["perfil"] == "admin":
         st.divider()
         st.page_link("pages/3_Empresas.py", label="🏢 Empresas")
-        st.page_link("pages/4_Usuarios.py", label="👤 Usuários")
+        st.page_link("pages/4_usuarios.py", label="👤 Usuários")
 
     st.divider()
     st.write(f"**Usuário:** {usuario['nome']}")
@@ -611,8 +611,8 @@ st.markdown(
         </div>
     </div>
     """,
-        unsafe_allow_html=True
-    )
+    unsafe_allow_html=True
+)
 
 c1, c2, c3, c4 = st.columns(4)
 
