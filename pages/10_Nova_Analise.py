@@ -17,26 +17,28 @@ st.set_page_config(
 
 aplicar_estilo_global()
 
+# 🔐 Proteção de login
 if "usuario" not in st.session_state or st.session_state.usuario is None:
-    st.switch_page("pages/1_Login.py")
+    st.switch_page("pages/1_login.py")  # corrigido
 
 usuario = st.session_state.usuario
 empresa_id = usuario["empresa_id"]
 usuario_id = usuario["id"]
 empresa_nome = usuario.get("empresa_nome", f"Empresa {empresa_id}")
 
+# 🔥 Sidebar
 with st.sidebar:
     render_sidebar_header()
 
     st.divider()
-    st.page_link("pages/2_Dashboard.py", label="📊 Dashboard")
-    st.page_link("pages/10_Nova_Analise.py", label="🚀 Nova análise")
-    st.page_link("pages/11_Historico.py", label="📚 Histórico")
+    st.page_link("pages/2_dashboard.py", label="📊 Dashboard")
+    st.page_link("pages/10_nova_analise.py", label="🚀 Nova análise")
+    st.page_link("pages/11_historico.py", label="📚 Histórico")
 
     if usuario["perfil"] == "admin":
         st.divider()
-        st.page_link("pages/3_Empresas.py", label="🏢 Empresas")
-        st.page_link("pages/4_Usuarios.py", label="👤 Usuários")
+        st.page_link("pages/3_empresas.py", label="🏢 Empresas")
+        st.page_link("pages/4_usuarios.py", label="👤 Usuários")  # corrigido
 
     st.divider()
     st.write(f"**Usuário:** {usuario['nome']}")
@@ -44,8 +46,9 @@ with st.sidebar:
 
     if st.button("🚪 Sair", use_container_width=True):
         st.session_state.usuario = None
-        st.switch_page("pages/1_Login.py")
+        st.switch_page("pages/1_login.py")  # corrigido
 
+# 🚀 Hero
 render_hero(
     "🚀 Nova Análise",
     "Digite um produto e deixe o MarketMind coletar e preparar um dashboard exclusivo"
@@ -53,6 +56,7 @@ render_hero(
 
 col_a, col_b = st.columns([1.5, 1])
 
+# 📊 Área principal
 with col_a:
     st.markdown(
         """
@@ -90,11 +94,14 @@ with col_a:
                     st.success(f"Busca: {resultado['termo_busca']}")
                     st.success(f"Produtos novos salvos: {resultado['novos_salvos']}")
 
-                    st.switch_page("pages/12_Dashboard_Analise.py")
+                    # 🔥 corrigido
+                    st.switch_page("pages/12_dashboard_analise.py")
+
                 except Exception as e:
                     st.error("Erro ao criar análise.")
                     st.code(str(e))
 
+# 📘 Como funciona
 with col_b:
     st.markdown(
         """
@@ -114,6 +121,7 @@ with col_b:
         unsafe_allow_html=True
     )
 
+# 📜 Histórico rápido
 render_section_title("Últimas análises criadas")
 
 coletas = listar_coletas_por_empresa(empresa_id)
