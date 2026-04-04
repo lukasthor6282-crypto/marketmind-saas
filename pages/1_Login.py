@@ -1,54 +1,50 @@
 import streamlit as st
-from core.auth import autenticar_usuario
-from utils.ui import aplicar_estilo_global, render_hero
+from services.auth_service import autenticar_usuario
 
 st.set_page_config(
     page_title="Login - MarketMind",
     page_icon="🔐",
-    layout="wide"
+    layout="centered"
 )
 
-aplicar_estilo_global()
+if "usuario" in st.session_state and st.session_state.usuario:
+    st.switch_page("pages/2_Dashboard.py")
 
-if "usuario" not in st.session_state:
-    st.session_state.usuario = None
-
-col_esq, col_centro, col_dir = st.columns([1, 1.3, 1])
-
-with col_centro:
-    render_hero(
-        "🔐 Entrar no MarketMind",
-        "Plataforma de inteligência estratégica para análises de mercado"
-    )
-
-    st.markdown(
-        """
-        <div class="dm-card">
-            <div style="font-size:22px; font-weight:800; color:#fff; margin-bottom:8px;">
-                Acesse sua conta
-            </div>
-            <div style="font-size:14px; color:#94a3b8;">
-                Entre para visualizar dashboards, análises e oportunidades.
-            </div>
+st.markdown(
+    """
+    <div style="
+        background: linear-gradient(135deg, rgba(15,23,42,0.92), rgba(8,12,24,0.98));
+        border: 1px solid rgba(255,255,255,0.07);
+        border-radius: 24px;
+        padding: 28px;
+        margin-top: 40px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.18);
+    ">
+        <div style="font-size:32px; font-weight:900; color:#f8fafc; margin-bottom:8px;">
+            🔐 MarketMind
         </div>
-        """,
-        unsafe_allow_html=True
-    )
+        <div style="font-size:15px; color:#94a3b8; line-height:1.6;">
+            Faça login para acessar sua inteligência de mercado.
+        </div>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
 
-    with st.form("form_login"):
-        email = st.text_input("E-mail", placeholder="seuemail@empresa.com")
-        senha = st.text_input("Senha", type="password", placeholder="Digite sua senha")
-        entrar = st.form_submit_button("Entrar", use_container_width=True)
+st.markdown("### Entrar")
 
-    if entrar:
-        if not email.strip() or not senha.strip():
-            st.warning("Preencha e-mail e senha.")
+email = st.text_input("Email", placeholder="seuemail@empresa.com")
+senha = st.text_input("Senha", type="password", placeholder="Digite sua senha")
+
+if st.button("Entrar", use_container_width=True):
+    if not email or not senha:
+        st.warning("Preencha email e senha.")
+    else:
+        usuario = autenticar_usuario(email, senha)
+
+        if usuario:
+            st.session_state.usuario = usuario
+            st.success("Login realizado com sucesso.")
+            st.switch_page("pages/2_Dashboard.py")
         else:
-            usuario = autenticar_usuario(email.strip(), senha.strip())
-
-            if usuario:
-                st.session_state.usuario = usuario
-                st.success("Login realizado com sucesso.")
-                st.switch_page("pages/2_Dashboard.py")
-            else:
-                st.error("E-mail ou senha inválidos.")
+            st.error("Email ou senha inválidos.")

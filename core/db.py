@@ -1,15 +1,37 @@
+import os
 import psycopg2
 from psycopg2.extras import RealDictCursor
-from core.config import DB_HOST, DB_PORT, DB_NAME, DB_USER, DB_PASSWORD
+import streamlit as st
+from dotenv import load_dotenv
+
+load_dotenv()
+
+
+def get_secret(name, default=None):
+    try:
+        if name in st.secrets:
+            return st.secrets[name]
+    except Exception:
+        pass
+
+    return os.getenv(name, default)
 
 
 def get_connection():
+    database_url = get_secret("DATABASE_URL")
+
+    if database_url:
+        return psycopg2.connect(
+            database_url,
+            cursor_factory=RealDictCursor
+        )
+
     return psycopg2.connect(
-        host=DB_HOST,
-        port=DB_PORT,
-        dbname=DB_NAME,
-        user=DB_USER,
-        password=DB_PASSWORD,
+        host=get_secret("DB_HOST"),
+        port=get_secret("DB_PORT", "5432"),
+        dbname=get_secret("DB_NAME"),
+        user=get_secret("DB_USER"),
+        password=get_secret("DB_PASSWORD"),
         cursor_factory=RealDictCursor,
         sslmode="require"
     )
