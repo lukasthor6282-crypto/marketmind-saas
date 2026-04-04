@@ -6,3 +6,5 @@ requests
 pandas
 plotly
 reportlab
+beautifulsoup4
+lxml
