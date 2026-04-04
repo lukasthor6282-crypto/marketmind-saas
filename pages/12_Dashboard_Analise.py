@@ -59,7 +59,7 @@ with st.sidebar:
     if usuario["perfil"] == "admin":
         st.divider()
         st.page_link("pages/3_Empresas.py", label="🏢 Empresas")
-        st.page_link("pages/4_Usuarios.py", label="👤 Usuários")
+        st.page_link("pages/4_usuarios.py", label="👤 Usuários")
 
     st.divider()
     st.write(f"**Usuário:** {usuario['nome']}")
