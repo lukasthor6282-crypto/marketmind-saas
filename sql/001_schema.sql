@@ -1,0 +1,49 @@
+CREATE TABLE IF NOT EXISTS empresas (
+    id SERIAL PRIMARY KEY,
+    nome VARCHAR(150) NOT NULL,
+    slug VARCHAR(80) UNIQUE NOT NULL,
+    ativo BOOLEAN NOT NULL DEFAULT TRUE,
+    criado_em TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS usuarios (
+    id SERIAL PRIMARY KEY,
+    empresa_id INT NOT NULL REFERENCES empresas(id) ON DELETE RESTRICT,
+    nome VARCHAR(150) NOT NULL,
+    email VARCHAR(150) UNIQUE NOT NULL,
+    senha_hash TEXT NOT NULL,
+    perfil VARCHAR(30) NOT NULL DEFAULT 'operador',
+    ativo BOOLEAN NOT NULL DEFAULT TRUE,
+    criado_em TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS analises (
+    id SERIAL PRIMARY KEY,
+    empresa_id INT NOT NULL REFERENCES empresas(id) ON DELETE RESTRICT,
+    usuario_id INT NOT NULL REFERENCES usuarios(id) ON DELETE RESTRICT,
+    titulo VARCHAR(200) NOT NULL,
+    resumo TEXT,
+    score NUMERIC(10,2),
+    criado_em TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS produtos (
+    id SERIAL PRIMARY KEY,
+    empresa_id INT NOT NULL REFERENCES empresas(id) ON DELETE RESTRICT,
+    marketplace VARCHAR(50) NOT NULL,
+    item_id VARCHAR(50),
+    titulo VARCHAR(255) NOT NULL,
+    preco NUMERIC(12,2),
+    status VARCHAR(50),
+    permalink TEXT,
+    criado_em TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS relatorios (
+    id SERIAL PRIMARY KEY,
+    empresa_id INT NOT NULL REFERENCES empresas(id) ON DELETE RESTRICT,
+    usuario_id INT NOT NULL REFERENCES usuarios(id) ON DELETE RESTRICT,
+    nome_arquivo VARCHAR(255) NOT NULL,
+    caminho_arquivo TEXT,
+    criado_em TIMESTAMP NOT NULL DEFAULT NOW()
+);
