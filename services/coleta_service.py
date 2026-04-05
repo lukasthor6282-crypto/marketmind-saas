@@ -1,131 +1,81 @@
-import time
-import random
 import re
 import requests
-from bs4 import BeautifulSoup
 from urllib.parse import quote
 
 from services.coletas_service import criar_coleta
 from services.produtos_service import salvar_produto, produto_existe
 
 
+ML_SEARCH_URL = "https://api.mercadolibre.com/sites/MLB/search"
+
 HEADERS = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/122.0.0.0 Safari/537.36",
-    "Accept-Language": "pt-BR,pt;q=0.9,en-US;q=0.8",
-    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
-    "Connection": "keep-alive"
+    "User-Agent": "Mozilla/5.0",
+    "Accept": "application/json",
+    "Content-Type": "application/json",
 }
 
-SESSION = requests.Session()
-SESSION.headers.update(HEADERS)
+
+def formatar_busca(produto: str) -> str:
+    return produto.strip()
 
 
-def formatar_busca(produto: str):
-    return quote(produto.strip())
+def extrair_item_id(item_id: str, link: str = "") -> str:
+    if item_id:
+        return item_id
+
+    if link:
+        match = re.search(r"(MLB\d+)", link)
+        if match:
+            return match.group(1)
+
+    return ""
 
 
-def baixar_pagina(produto: str) -> str:
-    busca = formatar_busca(produto)
-    url = f"https://lista.mercadolivre.com.br/{busca}"
+def buscar_produtos_api(produto: str) -> list[dict]:
+    termo = formatar_busca(produto)
 
-    print("🔎 URL:", url)
+    params = {
+        "q": termo,
+        "limit": 30,
+    }
 
-    time.sleep(random.uniform(1.0, 2.0))
+    response = requests.get(
+        ML_SEARCH_URL,
+        headers=HEADERS,
+        params=params,
+        timeout=30,
+    )
+    response.raise_for_status()
 
-    response = SESSION.get(url, timeout=30)
-
-    print("📡 STATUS:", response.status_code)
-
-    if response.status_code != 200:
-        raise Exception("Erro ao acessar Mercado Livre")
-
-    html = response.text
-
-    if "captcha" in html.lower():
-        raise Exception("🚫 Mercado Livre bloqueou (captcha)")
-
-    return html
-
-
-def extrair_texto(el):
-    return el.get_text(strip=True) if el else ""
-
-
-def converter_preco(texto):
-    if not texto:
-        return None
-    texto = texto.replace(".", "").replace(",", "")
-    try:
-        return float(texto)
-    except:
-        return None
-
-
-def extrair_item_id(link):
-    if not link:
-        return ""
-
-    match = re.search(r"(MLB\d+)", link)
-    return match.group(1) if match else link[:50]
-
-
-def coletar_produtos(html):
-    soup = BeautifulSoup(html, "html.parser")
-
-    seletores = [
-        ".ui-search-layout__item",
-        ".ui-search-result",
-        ".poly-card",
-        "li.ui-search-layout__item"
-    ]
-
-    cards = []
-
-    for s in seletores:
-        cards = soup.select(s)
-        if cards:
-            print(f"✅ Seletor funcionando: {s}")
-            break
-
-    print("📦 Total de cards:", len(cards))
-
-    if not cards:
-        print(html[:1000])  # DEBUG
-        raise Exception("Nenhum produto encontrado")
+    data = response.json()
+    resultados = data.get("results", [])
 
     produtos = []
 
-    for card in cards:
-        titulo = (
-            extrair_texto(card.select_one(".poly-component__title")) or
-            extrair_texto(card.select_one(".ui-search-item__title")) or
-            extrair_texto(card.select_one("h2"))
-        )
+    for item in resultados:
+        titulo = item.get("title", "").strip()
+        preco = item.get("price")
+        link = item.get("permalink", "")
+        item_id = extrair_item_id(item.get("id", ""), link)
 
-        preco_texto = (
-            extrair_texto(card.select_one(".andes-money-amount__fraction")) or
-            extrair_texto(card.select_one(".price-tag-fraction"))
-        )
+        if titulo and preco is not None:
+            produtos.append(
+                {
+                    "titulo": titulo,
+                    "preco": float(preco),
+                    "link": link,
+                    "item_id": item_id,
+                }
+            )
 
-        preco = converter_preco(preco_texto)
-
-        link_el = card.select_one("a")
-        link = link_el.get("href") if link_el else ""
-
-        if titulo and preco:
-            produtos.append({
-                "titulo": titulo,
-                "preco": preco,
-                "link": link,
-                "item_id": extrair_item_id(link)
-            })
+    if not produtos:
+        raise ValueError("Nenhum produto encontrado")
 
     return produtos
 
 
-def coletar_e_salvar(produto_busca, empresa_id, usuario_id):
-    html = baixar_pagina(produto_busca)
-    produtos = coletar_produtos(html)
+def coletar_e_salvar(produto_busca: str, empresa_id: int, usuario_id: int):
+    produtos = buscar_produtos_api(produto_busca)
 
     coleta = criar_coleta(empresa_id, usuario_id, produto_busca)
     coleta_id = coleta["id"]
@@ -133,20 +83,24 @@ def coletar_e_salvar(produto_busca, empresa_id, usuario_id):
     salvos = 0
 
     for item in produtos:
-        if not produto_existe(empresa_id, coleta_id, item["item_id"]):
+        item_id = item["item_id"]
+
+        if item_id and not produto_existe(empresa_id, coleta_id, item_id):
             salvar_produto(
-                empresa_id,
-                coleta_id,
-                "Mercado Livre",
-                item["item_id"],
-                item["titulo"],
-                item["preco"],
-                "active",
-                item["link"]
+                empresa_id=empresa_id,
+                coleta_id=coleta_id,
+                marketplace="Mercado Livre",
+                item_id=item_id,
+                titulo=item["titulo"],
+                preco=item["preco"],
+                status="active",
+                permalink=item["link"],
             )
             salvos += 1
 
     return {
-        "total": len(produtos),
-        "salvos": salvos
+        "coleta_id": coleta_id,
+        "termo_busca": produto_busca,
+        "total_encontrados": len(produtos),
+        "novos_salvos": salvos,
     }
