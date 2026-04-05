@@ -46,7 +46,20 @@ The system collects, processes, and organizes data to help users understand pric
 
 ## 📸 Preview
 
+<<<<<<< HEAD
 ![Dashboard](./assets/dashboard.png)
+=======
+### 📊 Dashboard
+!![Dashboard](./dashboard-main.png)
+
+### 🚀 Create Analysis
+![New Analysis](./new-analysis.png)
+
+### 🧠 Insights
+![Insights](./analysis-results.png)
+### 💰 Pricing Strategy
+![Pricing](./pricing-insights.png)
+>>>>>>> 3e6609c0dbea271315cca9fc11570e3f7cbf3220
 
 ---
 
@@ -54,4 +67,8 @@ The system collects, processes, and organizes data to help users understand pric
 
 ### Clone the repository
 ```bash
+<<<<<<< HEAD
 git clone https://github.com/your-username/marketmind.git
+=======
+git clone https://github.com/lukasthor6282-crypto/marketmind.git
+>>>>>>> 3e6609c0dbea271315cca9fc11570e3f7cbf3220
