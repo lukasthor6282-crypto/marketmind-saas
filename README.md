@@ -47,17 +47,15 @@ The system collects, processes, and organizes data to help users understand pric
 ## 📸 Preview
 
 ### 📊 Dashboard
-![Dashboard](./assets/dashboard-main.png)
+!![Dashboard](./dashboard-main.png)
 
 ### 🚀 Create Analysis
-![New Analysis](./assets/new-analysis.png)
+![New Analysis](./new-analysis.png)
 
 ### 🧠 Insights
-![Insights](./assets/analysis-results.png)
-
+![Insights](./analysis-results.png)
 ### 💰 Pricing Strategy
-![Pricing](./assets/pricing-insights.png)
-
+![Pricing](./pricing-insights.png)
 
 ---
 
