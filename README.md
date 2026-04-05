@@ -54,4 +54,4 @@ The system collects, processes, and organizes data to help users understand pric
 
 ### Clone the repository
 ```bash
-git clone https://github.com/your-username/marketmind.git
+git clone https://github.com/lukasthor6282-crypto/marketmind.git
