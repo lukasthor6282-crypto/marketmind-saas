@@ -23,6 +23,35 @@ st.set_page_config(
 
 aplicar_estilo_global()
 
+# ajuste visual mais minimalista só nesta página
+st.markdown(
+    """
+    <style>
+    .block-container {
+        padding-top: 1.2rem !important;
+    }
+
+    div[data-testid="stMetric"] {
+        background: linear-gradient(135deg, rgba(15,23,42,0.62), rgba(8,12,24,0.88));
+        border: 1px solid rgba(255,255,255,0.05);
+        border-radius: 18px;
+        padding: 10px 14px;
+    }
+
+    div[data-testid="stMetricLabel"] {
+        color: #94a3b8 !important;
+        font-size: 13px !important;
+    }
+
+    div[data-testid="stMetricValue"] {
+        color: #f8fafc !important;
+        font-weight: 800 !important;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
 if "usuario" not in st.session_state or st.session_state.usuario is None:
     st.switch_page("pages/1_Login.py")
 
@@ -111,12 +140,6 @@ def enriquecer_produto(produto: dict) -> dict:
         or "Não classificado"
     )
 
-    palavras = produto.get("palavras_chave") or produto.get("keywords") or []
-    if isinstance(palavras, str):
-        palavras = [palavras]
-
-    historico = produto.get("historico_precos") or produto.get("historico") or []
-
     decisao = produto.get("decisao") or {
         "status": "cautela",
         "mensagem": "Decisão ainda não disponível para este produto.",
@@ -133,21 +156,8 @@ def enriquecer_produto(produto: dict) -> dict:
         "faixa_min_resolvida": faixa_min,
         "faixa_max_resolvida": faixa_max,
         "oportunidade_resolvida": oportunidade,
-        "palavras_resolvidas": palavras,
-        "historico_resolvido": historico,
         "decisao_resolvida": decisao,
     }
-
-
-def cor_oportunidade(texto: str) -> str:
-    texto = str(texto).lower()
-    if "alta" in texto or "boa" in texto or "oportun" in texto:
-        return "rgba(34,211,238,0.18)"
-    if "media" in texto or "moderad" in texto:
-        return "rgba(168,85,247,0.18)"
-    if "baixa" in texto or "ruim" in texto or "evitar" in texto:
-        return "rgba(244,63,94,0.18)"
-    return "rgba(255,255,255,0.06)"
 
 
 def config_decisao(decisao: dict) -> dict:
@@ -328,7 +338,7 @@ with col_top_1:
     )
 
 with col_top_2:
-    st.markdown("<div style='height:28px;'></div>", unsafe_allow_html=True)
+    st.markdown("<div style='height:24px;'></div>", unsafe_allow_html=True)
     carregar = st.button("🔎 Carregar produtos", use_container_width=True)
 
 coleta_id = opcoes_map[coleta_label]
@@ -405,7 +415,7 @@ dist_oportunidade.columns = ["categoria", "quantidade"]
 
 titulo_portfolio, texto_portfolio, acao_portfolio, cor_portfolio = gerar_insight_portfolio(df_produtos)
 
-vp1, vp2, vp3 = st.columns([1, 1, 1])
+vp1, vp2, vp3 = st.columns([1, 1, 0.95])
 
 with vp1:
     st.markdown("#### Distribuição por decisão")
@@ -415,7 +425,7 @@ with vp1:
         center_title="DECISÕES",
         center_value=int(dist_decisao["quantidade"].sum()),
         colors=["#22d3ee", "#8b5cf6", "#ef4444"],
-        height=330
+        height=300
     )
     st.plotly_chart(fig_decisao, use_container_width=True)
 
@@ -427,7 +437,7 @@ with vp2:
         center_title="PORTFÓLIO",
         center_value=int(dist_oportunidade["quantidade"].sum()),
         colors=["#22d3ee", "#8b5cf6", "#ef4444"],
-        height=330
+        height=300
     )
     st.plotly_chart(fig_oportunidade, use_container_width=True)
 
@@ -437,34 +447,26 @@ with vp3:
         <div style="
             background:{cor_portfolio};
             border: 1px solid rgba(255,255,255,0.08);
-            border-radius: 24px;
-            padding: 18px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.18);
-            min-height: 260px;
+            border-radius: 20px;
+            padding: 16px;
+            box-shadow: 0 10px 24px rgba(0,0,0,0.16);
+            min-height: 235px;
         ">
-            <div style="font-size:13px; color:#cbd5e1; margin-bottom:8px;">
+            <div style="font-size:12px; color:#cbd5e1; margin-bottom:8px;">
                 LEITURA EXECUTIVA
             </div>
-            <div style="font-size:24px; font-weight:900; color:#f8fafc; margin-bottom:10px; line-height:1.4;">
+            <div style="font-size:22px; font-weight:900; color:#f8fafc; margin-bottom:10px; line-height:1.35;">
                 {titulo_portfolio}
             </div>
-            <div style="font-size:14px; color:#e2e8f0; line-height:1.7; margin-bottom:12px;">
+            <div style="font-size:13px; color:#e2e8f0; line-height:1.65; margin-bottom:12px;">
                 {texto_portfolio}
             </div>
-            <div style="font-size:14px; color:#f8fafc; font-weight:700; line-height:1.7;">
+            <div style="font-size:13px; color:#f8fafc; font-weight:700; line-height:1.65;">
                 {acao_portfolio}
             </div>
         </div>
         """,
         unsafe_allow_html=True
-    )
-
-    st.markdown("#### Ranking de decisões")
-    ranking_cards(
-        labels=dist_decisao["categoria"].tolist(),
-        values=dist_decisao["quantidade"].tolist(),
-        colors=["#22d3ee", "#8b5cf6", "#ef4444"],
-        highlight_first=False
     )
 
 render_section_title("Ranking estratégico dos produtos")
@@ -522,22 +524,22 @@ for _, row in df_ranking.iterrows():
     st.markdown(
         f"""
         <div style="
-            background: linear-gradient(135deg, rgba(15,23,42,0.82), rgba(8,12,24,0.98));
-            border: 1px solid rgba(255,255,255,0.06);
-            border-radius: 20px;
-            padding: 16px 18px;
-            margin-bottom: 12px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.14);
+            background: linear-gradient(135deg, rgba(15,23,42,0.78), rgba(8,12,24,0.96));
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 18px;
+            padding: 14px 16px;
+            margin-bottom: 10px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.12);
         ">
             <div style="
                 display:flex;
                 justify-content:space-between;
                 align-items:flex-start;
                 gap:16px;
-                margin-bottom:10px;
+                margin-bottom:8px;
             ">
                 <div style="flex:1;">
-                    <div style="font-size:17px; font-weight:800; color:#f8fafc; line-height:1.5;">
+                    <div style="font-size:16px; font-weight:800; color:#f8fafc; line-height:1.45;">
                         {row["titulo_resolvido"]}
                     </div>
                 </div>
@@ -558,7 +560,7 @@ for _, row in df_ranking.iterrows():
     with k4:
         st.metric("Oportunidade", row["oportunidade_resolvida"])
 
-render_section_title("Seleção de produto")
+render_section_title("Produto selecionado")
 
 nomes_produtos = df_ranking["titulo_resolvido"].tolist()
 produto_escolhido_nome = st.selectbox("Escolha o produto para detalhar", nomes_produtos)
@@ -572,17 +574,17 @@ visual_decisao = config_decisao(decisao)
 st.markdown(
     f"""
     <div style="
-        background: linear-gradient(135deg, rgba(15,23,42,0.86), rgba(8,12,24,0.98));
-        border: 1px solid rgba(255,255,255,0.07);
-        border-radius: 24px;
-        padding: 20px;
-        margin-bottom: 16px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.18);
+        background: linear-gradient(135deg, rgba(15,23,42,0.84), rgba(8,12,24,0.98));
+        border: 1px solid rgba(255,255,255,0.06);
+        border-radius: 20px;
+        padding: 18px;
+        margin-bottom: 14px;
+        box-shadow: 0 10px 24px rgba(0,0,0,0.16);
     ">
-        <div style="font-size:13px; color:#94a3b8; margin-bottom:8px;">
+        <div style="font-size:12px; color:#94a3b8; margin-bottom:8px;">
             PRODUTO SELECIONADO
         </div>
-        <div style="font-size:26px; font-weight:900; color:#f8fafc; line-height:1.4;">
+        <div style="font-size:24px; font-weight:900; color:#f8fafc; line-height:1.35;">
             {produto["titulo_resolvido"]}
         </div>
     </div>
@@ -595,18 +597,18 @@ st.markdown(
     <div style="
         background:{visual_decisao['fundo']};
         border:1px solid {visual_decisao['borda']};
-        border-radius:22px;
-        padding:18px 20px;
-        margin-bottom:18px;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+        border-radius:20px;
+        padding:16px 18px;
+        margin-bottom:16px;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.10);
     ">
-        <div style="font-size:13px; color:#cbd5e1; margin-bottom:8px;">
+        <div style="font-size:12px; color:#cbd5e1; margin-bottom:8px;">
             DECISÃO IA POR PRODUTO
         </div>
-        <div style="font-size:24px; font-weight:900; color:#f8fafc; margin-bottom:8px;">
+        <div style="font-size:22px; font-weight:900; color:#f8fafc; margin-bottom:8px;">
             {visual_decisao['icone']} {visual_decisao['titulo']}
         </div>
-        <div style="font-size:14px; color:#e2e8f0; line-height:1.7;">
+        <div style="font-size:13px; color:#e2e8f0; line-height:1.65;">
             {decisao.get("mensagem", "Sem mensagem de decisão.")}
         </div>
     </div>
@@ -630,16 +632,16 @@ render_section_title("Leitura estratégica")
 st.markdown(
     f"""
     <div style="
-        background: rgba(34,211,238,0.10);
-        border: 1px solid rgba(34,211,238,0.22);
-        border-radius: 20px;
-        padding: 18px;
-        margin-bottom: 18px;
+        background: rgba(34,211,238,0.08);
+        border: 1px solid rgba(34,211,238,0.18);
+        border-radius: 18px;
+        padding: 16px;
+        margin-bottom: 16px;
     ">
-        <div style="font-size:20px; font-weight:800; color:#f8fafc; margin-bottom:8px;">
+        <div style="font-size:18px; font-weight:800; color:#f8fafc; margin-bottom:6px;">
             {titulo_estrategia}
         </div>
-        <div style="font-size:14px; color:#dbe4f0; line-height:1.7;">
+        <div style="font-size:13px; color:#dbe4f0; line-height:1.65;">
             {texto_estrategia}
         </div>
     </div>
@@ -671,7 +673,7 @@ with col_left:
     fig_faixa.update_traces(
         marker=dict(
             color=["#22d3ee", "#3b82f6", "#8b5cf6", "#ec4899"],
-            line=dict(color="rgba(255,255,255,0.12)", width=1)
+            line=dict(color="rgba(255,255,255,0.10)", width=1)
         )
     )
     fig_faixa.update_layout(
@@ -680,7 +682,7 @@ with col_left:
         font=dict(color="#E5E7EB"),
         xaxis_title="",
         yaxis_title="Preço",
-        margin=dict(l=10, r=10, t=50, b=10)
+        margin=dict(l=10, r=10, t=45, b=10)
     )
     st.plotly_chart(fig_faixa, use_container_width=True)
 
@@ -697,84 +699,22 @@ with col_right:
         center_title="SCORE",
         center_value=round(produto["score_resolvido"], 1),
         colors=["#22d3ee", "#334155"],
-        height=360
+        height=330
     )
     st.plotly_chart(fig_donut, use_container_width=True)
-
-    ranking_cards(
-        labels=["Concorrência", "Oportunidade"],
-        values=[
-            1 if str(produto["concorrencia_resolvida"]).strip() else 0.5,
-            produto["score_resolvido"] if produto["score_resolvido"] > 0 else 0.5
-        ],
-        colors=["#8b5cf6", "#22d3ee"],
-        highlight_first=False
-    )
-
-render_section_title("Palavras-chave do produto")
-
-palavras = produto["palavras_resolvidas"]
-
-if palavras:
-    if isinstance(palavras, list) and len(palavras) > 0 and isinstance(palavras[0], (list, tuple)):
-        df_palavras = pd.DataFrame(palavras, columns=["palavra", "frequencia"])
-    else:
-        df_palavras = pd.DataFrame({"palavra": palavras})
-        df_palavras["frequencia"] = 1
-
-    col_kw1, col_kw2 = st.columns([0.9, 1.1])
-
-    with col_kw1:
-        st.dataframe(df_palavras, use_container_width=True, hide_index=True)
-
-    with col_kw2:
-        fig_kw = px.bar(
-            df_palavras.sort_values("frequencia", ascending=True),
-            x="frequencia",
-            y="palavra",
-            orientation="h",
-            title="Palavras com maior presença"
-        )
-        fig_kw.update_traces(
-            marker=dict(
-                color=df_palavras["frequencia"],
-                colorscale=[
-                    [0.0, "#22d3ee"],
-                    [0.5, "#3b82f6"],
-                    [1.0, "#a855f7"]
-                ],
-                line=dict(color="rgba(255,255,255,0.15)", width=1)
-            )
-        )
-        fig_kw.update_layout(
-            paper_bgcolor="rgba(0,0,0,0)",
-            plot_bgcolor="rgba(255,255,255,0.02)",
-            font=dict(color="#E5E7EB"),
-            xaxis_title="Frequência",
-            yaxis_title="",
-            coloraxis_showscale=False,
-            margin=dict(l=10, r=10, t=50, b=10)
-        )
-        st.plotly_chart(fig_kw, use_container_width=True)
-else:
-    empty_state(
-        titulo="Sem palavras-chave para este produto",
-        descricao="Sua engine ainda não retornou palavras-chave detalhadas para o item selecionado.",
-        icone="🔤"
-    )
 
 render_section_title("Resumo técnico")
 
 st.markdown(
     f"""
     <div style="
-        background: linear-gradient(135deg, rgba(15,23,42,0.82), rgba(8,12,24,0.98));
-        border: 1px solid rgba(255,255,255,0.07);
-        border-radius: 22px;
-        padding: 18px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.18);
+        background: linear-gradient(135deg, rgba(15,23,42,0.78), rgba(8,12,24,0.98));
+        border: 1px solid rgba(255,255,255,0.06);
+        border-radius: 20px;
+        padding: 16px;
+        box-shadow: 0 10px 24px rgba(0,0,0,0.16);
     ">
-        <div style="font-size:14px; color:#94a3b8; line-height:1.9;">
+        <div style="font-size:13px; color:#94a3b8; line-height:1.85;">
             <strong style="color:#f8fafc;">Concorrência:</strong> {produto["concorrencia_resolvida"]}<br>
             <strong style="color:#f8fafc;">Preço atual:</strong> {formatar_moeda(produto["preco_resolvido"])}<br>
             <strong style="color:#f8fafc;">Preço sugerido:</strong> {formatar_moeda(produto["preco_sugerido_resolvido"])}<br>

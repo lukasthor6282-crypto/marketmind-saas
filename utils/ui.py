@@ -238,16 +238,38 @@ def aplicar_estilo_global():
 
 
 def render_hero(titulo: str, subtitulo: str):
+    import streamlit as st
+
     st.markdown(
         f"""
-        <div class="dm-hero">
-            <div class="dm-title">{titulo}</div>
-            <div class="dm-subtitle">{subtitulo}</div>
+        <div style="
+            background: linear-gradient(135deg, rgba(15,23,42,0.72), rgba(8,12,24,0.90));
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 18px;
+            padding: 14px 18px;
+            margin-bottom: 16px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.14);
+        ">
+            <div style="
+                font-size: 26px;
+                font-weight: 900;
+                color: #f8fafc;
+                line-height: 1.2;
+                margin-bottom: 4px;
+            ">
+                {titulo}
+            </div>
+            <div style="
+                font-size: 13px;
+                color: #94a3b8;
+                line-height: 1.5;
+            ">
+                {subtitulo}
+            </div>
         </div>
         """,
         unsafe_allow_html=True
     )
-
 
 def render_section_title(titulo: str):
     st.markdown(f'<div class="dm-section-title">{titulo}</div>', unsafe_allow_html=True)
