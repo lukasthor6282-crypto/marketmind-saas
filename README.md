@@ -62,13 +62,3 @@ The system collects, processes, and organizes data to help users understand pric
 >>>>>>> 3e6609c0dbea271315cca9fc11570e3f7cbf3220
 
 ---
-
-## 🚀 Getting Started
-
-### Clone the repository
-```bash
-<<<<<<< HEAD
-git clone https://github.com/your-username/marketmind.git
-=======
-git clone https://github.com/lukasthor6282-crypto/marketmind.git
->>>>>>> 3e6609c0dbea271315cca9fc11570e3f7cbf3220
